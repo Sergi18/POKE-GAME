@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc de Cartes Pokémon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Template para clonar cartas -->
+    <template id="card-template">
+        <div class="pokemon-card">
+            <div class="card-inner">
+                <div class="card-back">
+                    <div class="pokeball"></div>
+                </div>
+                <div class="card-front">
+                    <div class="card-header">
+                        <h3 class="pokemon-name"></h3>
+                        <div class="pokemon-hp">HP: <span class="hp-value"></span></div>
+                    </div>
+                    <div class="card-image-container">
+                        <img src="/placeholder.svg" alt="" class="pokemon-image">
+                    </div>
+                    <div class="pokemon-types"></div>
+                    <div class="pokemon-stats">
+                        <div class="stat">
+                            <span class="stat-label">Atac</span>
+                            <span class="stat-value stat-attack"></span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Defensa</span>
+                            <span class="stat-value stat-defense"></span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Velocitat</span>
+                            <span class="stat-value stat-speed"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <main class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Joc de Cartes Pokémon</h1>
+            <!-- Afegir descripcions de les modalitats -->
+            <div class="mode-descriptions">
+                <div class="mode-description" id="desc-turns">
+                    <strong>Lluita per torns:</strong> Dos Pokémon es combaten alternant-se els atacs fins que un es quedi sense vida.
+                </div>
+                <div class="mode-description hidden" id="desc-vsIA">
+                    <strong>Contra IA:</strong> Selecciones un Pokémon i la màquina en tria un altre automàticament per lluitar.
+                </div>
+                <div class="mode-description hidden" id="desc-team">
+                    <strong>Batalla d'equips:</strong> Cada jugador tria un equip de Pokémon. Lluiten en ordre i el guanyador continua lluitant amb HP restant contra el següent Pokémon rival fins que un jugador perdi tots els seus Pokémon.
+                </div>
+            </div>
+        </header>
+
+        <!-- Afegir selector de modalitat abans dels controls -->
+        <div class="game-mode-selector">
+            <button class="mode-btn active" data-mode="turns">Lluita per torns</button>
+            <button class="mode-btn" data-mode="vsIA">Contra IA</button>
+            <button class="mode-btn" data-mode="team">Batalla d'equips</button>
+        </div>
+
+        <!-- Controles -->
+        <div class="controls">
+            <div class="control-group">
+                <label for="pokemonCount">Pokémon per jugador:</label>
+                <input 
+                    type="number" 
+                    id="pokemonCount" 
+                    value="5" 
+                    min="1" 
+                    max="15"
+                    class="input"
+                >
+            </div>
+            <button id="getPokemons" class="button">Obtenir Pokémons</button>
+        </div>
+
+        <!-- Filtro de búsqueda -->
+        <div class="filter-section">
+            <input 
+                type="text" 
+                id="filterInput" 
+                class="filter-input" 
+                placeholder="Buscar Pokémon descoberts per nom o tipus..."
+            >
+        </div>
+
+        <!-- Afegir botons de gestió del marcador -->
+        <div class="score-controls">
+            <button id="resetScore" class="score-btn">Reiniciar marcador</button>
+            <button id="saveScore" class="score-btn">Guardar marcador</button>
+            <button id="loadScore" class="score-btn">Carregar marcador</button>
+        </div>
+
+        <!-- Información de batalla -->
+        <div id="battleInfo" class="battle-info hidden">
+            <h2>Combat en curs</h2>
+            <div class="battle-details">
+                <div class="battle-pokemon attacker">
+                    <div class="pokemon-avatar">
+                        <img id="attackerImg" src="/placeholder.svg" alt="">
+                    </div>
+                    <div class="pokemon-info">
+                        <span class="pokemon-label">Atacant</span>
+                        <span class="pokemon-name" id="attackerName"></span>
+                        <div class="hp-bar">
+                            <div class="hp-fill" id="attackerHpBar"></div>
+                        </div>
+                        <span class="hp-text" id="attackerHp"></span>
+                    </div>
+                    <span class="attack-value" id="attackerValue"></span>
+                </div>
+                <div class="vs-separator">
+                    <span>VS</span>
+                </div>
+                <div class="battle-pokemon defender">
+                    <span class="attack-value" id="defenderValue"></span>
+                    <div class="pokemon-info">
+                        <span class="pokemon-label">Defensor</span>
+                        <span class="pokemon-name" id="defenderName"></span>
+                        <div class="hp-bar">
+                            <div class="hp-fill" id="defenderHpBar"></div>
+                        </div>
+                        <span class="hp-text" id="defenderHp"></span>
+                    </div>
+                    <div class="pokemon-avatar">
+                        <img id="defenderImg" src="/placeholder.svg" alt="">
+                    </div>
+                </div>
+            </div>
+            <div class="turn-info">
+                <span id="turnNumber">Turn 1</span>
+            </div>
+        </div>
+
+        <!-- Resultado de batalla -->
+        <div id="battleResult" class="battle-result hidden"></div>
+
+        <!-- Marcador de puntuación -->
+        <div id="scoreBoard" class="score-board hidden">
+            <h3>Marcador</h3>
+            <div class="scores">
+                <div class="score-item first-player">
+                    <div class="score-info">
+                        <span class="score-label">Jugador 1</span>
+                        <span class="score-subtitle">Victòries</span>
+                    </div>
+                    <span id="firstWins" class="score-value">0</span>
+                </div>
+                <div class="score-item draws">
+                    <div class="score-info">
+                        <span class="score-label">Empats</span>
+                    </div>
+                    <span id="draws" class="score-value">0</span>
+                </div>
+                <div class="score-item second-player">
+                    <div class="score-info">
+                        <span class="score-label">Jugador 2</span>
+                        <span class="score-subtitle">Victòries</span>
+                    </div>
+                    <span id="secondWins" class="score-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pokemon Cards Container -->
+        <div id="cardsContainer" class="cards-grid"></div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Carregant Pokémon...</p>
+        </div>
+
+        <!-- Afegir secció d'equips per modalitat team -->
+        <div id="teamBattle" class="team-battle-container hidden">
+            <div class="teams-display">
+                <div class="team player1-team">
+                    <h3>Equip Jugador 1</h3>
+                    <div id="player1Cards" class="team-cards"></div>
+                </div>
+                <div class="team player2-team">
+                    <h3>Equip Jugador 2</h3>
+                    <div id="player2Cards" class="team-cards"></div>
+                </div>
+            </div>
+            <button id="startTeamBattle" class="button hidden">Començar Batalla!</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
